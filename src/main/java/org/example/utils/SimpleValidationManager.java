@@ -1,17 +1,29 @@
-package src.main.java.org.example.utils;
+package org.example.utils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
 public class SimpleValidationManager {
 
-    public final Validator<Person> personValidator = PersonValidators.fullPersonValidator();
-    public final Validator<String> fileValidator = FileValidators.fileForLoading();
+    private final Validator<Person> personValidator;
+    private final Validator<String> fileValidator;
+    private final List<Person> validatedPersons = Collections.synchronizedList(new ArrayList<>());
 
-    public String validatePerson(Person person) {
-        return personValidator.validate(person);
+    public SimpleValidationManager() {
+        this.personValidator = PersonValidators.fullPersonValidator();
+        this.fileValidator = FileValidators.fileForLoading();
     }
 
-    public String validateFile(String fileName) {
+    public synchronized String validatePerson(Person person) {
+        String result = personValidator.validate(person);
+        if (result == null) {
+            validatedPersons.add(person);
+        }
+        return result;
+    }
+
+    public synchronized String validateFile(String fileName) {
         return fileValidator.validate(fileName);
     }
 
@@ -43,5 +55,9 @@ public class SimpleValidationManager {
     public String validateRange(int value, int min, int max, String fieldName) {
         return value < min || value > max
                 ? String.format("Ошибка: %s должен быть от %d до %d.", fieldName, min, max) : null;
+    }
+
+    public synchronized List<Person> getValidatedPersons() {
+        return new ArrayList<>(validatedPersons);
     }
 }

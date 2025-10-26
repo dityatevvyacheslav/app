@@ -1,4 +1,4 @@
-package src.main.java.org.example.utils;
+package org.example.utils;
 
 public class DataLineValidators {
 

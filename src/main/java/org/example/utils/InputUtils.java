@@ -1,46 +1,73 @@
-package src.main.java.org.example.utils;
+package org.example.utils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.stream.Stream;
+import java.util.Collections;
 
 public class InputUtils {
-    private List<Person> persons;
-    private SimpleValidationManager validator;
-    private Scanner scanner;
+    private final List<Person> persons = Collections.synchronizedList(new ArrayList<>());
+    private final SimpleValidationManager validator;
 
     public InputUtils() {
-        this.persons = new ArrayList<>();
         this.validator = new SimpleValidationManager();
-        this.scanner = new Scanner(System.in);
     }
 
     public int getIntInput(String message) {
-        while (true) {
-            try {
-                System.out.print(message);
-                return scanner.nextInt();
-            } catch (Exception e) {
-                System.out.println("Ошибка: введите целое число.");
-                scanner.nextLine();
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                try {
+                    System.out.print(message);
+                    return scanner.nextInt();
+                } catch (Exception e) {
+                    System.out.println("Ошибка: введите целое число.");
+                    scanner.nextLine();
+                }
             }
         }
     }
 
     public String getStringInput(String message) {
-        System.out.print(message);
-        return scanner.next();
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.print(message);
+            return scanner.next();
+        }
     }
 
-    public void closeScanner() {
-        scanner.close();
+    private String getValidatedName() {
+        while (true) {
+            String name = getStringInput("Введите имя: ");
+            if (validator.validateString(name, "имя") == null) {
+                return name;
+            }
+            System.out.println("Ошибка: имя не может быть пустым.");
+        }
+    }
+
+    private int getValidatedAge() {
+        while (true) {
+            int age = getIntInput("Введите возраст: ");
+            if (validator.validateRange(age, 0, 150, "возраст") == null) {
+                return age;
+            }
+            System.out.println("Ошибка: возраст должен быть от 0 до 150 лет.");
+        }
+    }
+
+    private int getValidatedScore() {
+        while (true) {
+            int score = getIntInput("Введите оценку: ");
+            if (validator.validateRange(score, 0, 100, "оценка") == null) {
+                return score;
+            }
+            System.out.println("Ошибка: оценка должна быть от 0 до 100.");
+        }
     }
 
     public void loadFromFile(String fileName) {
@@ -50,32 +77,28 @@ public class InputUtils {
             return;
         }
 
-        try {
-            Path filePath = Paths.get(fileName);
-            List<String> allLines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
-            List<Person> loadedPersons = new ArrayList<>();
+        List<Person> loadedPersons = new ArrayList<>();
 
-            for (int i = 0; i < allLines.size(); i++) {
-                String line = allLines.get(i);
-                int lineNumber = i + 1;
+        try (Stream<String> lines = Files.lines(Paths.get(fileName), StandardCharsets.UTF_8)) {
+            lines.forEach(line -> {
+                int lineNumber = loadedPersons.size() + 1;
+                line = line.trim();
 
-                String lineError = validator.validateDataLine(line, lineNumber);
-                if (lineError != null) {
-                    System.out.println(lineError);
-                    continue;
+                if (line.isEmpty()) {
+                    System.out.println("Пустая строка " + lineNumber + " пропущена");
+                    return;
                 }
 
-                String[] parts = line.split(",");
-                Person person = Person.builder()
-                        .name(parts[0].trim())
-                        .age(Integer.parseInt(parts[1].trim()))
-                        .score(Integer.parseInt(parts[2].trim()))
-                        .build();
+                String error = validator.validateDataLine(line, lineNumber);
+                if (error != null) {
+                    System.out.println(error);
+                } else {
+                    loadedPersons.add(createPersonFromLine(line));
+                }
+            });
 
-                loadedPersons.add(person);
-            }
-
-            this.persons = loadedPersons;
+            this.persons.clear();
+            this.persons.addAll(loadedPersons);
             System.out.println("Массив успешно загружен из файла. Загружено " + persons.size() + " записей.");
 
         } catch (IOException e) {
@@ -96,12 +119,11 @@ public class InputUtils {
         persons.clear();
 
         for (int i = 0; i < length; i++) {
-            Person person = Person.builder()
-                    .name(names[random.nextInt(names.length)] + "_" + (i + 1))
-                    .age(18 + random.nextInt(50))
-                    .score(random.nextInt(101))
-                    .build();
-            persons.add(person);
+            String simulatedLine = names[random.nextInt(names.length)] + "_" + (i + 1) + "," +
+                    (18 + random.nextInt(50)) + "," +
+                    random.nextInt(101);
+
+            persons.add(createPersonFromLine(simulatedLine));
         }
 
         System.out.println("Массив из " + length + " случайных записей создан.");
@@ -118,37 +140,16 @@ public class InputUtils {
 
         for (int i = 0; i < length; i++) {
             System.out.println("\nЗапись " + (i + 1) + ":");
-            Person person = Person.builder()
-                    .name(getValidatedName())
-                    .age(getValidatedAge())
-                    .score(getValidatedScore())
-                    .build();
 
-            persons.add(person);
+            String name = getValidatedName();
+            int age = getValidatedAge();
+            int score = getValidatedScore();
+
+            String manualLine = name + "," + age + "," + score;
+            persons.add(createPersonFromLine(manualLine));
         }
 
         System.out.println("Массив из " + length + " записей создан вручную.");
-    }
-
-    private String getValidatedName() {
-        return Stream.generate(() -> getStringInput("Введите имя: "))
-                .filter(name -> validator.validateString(name, "имя") == null)
-                .findFirst()
-                .orElse("");
-    }
-
-    private int getValidatedAge() {
-        return Stream.generate(() -> getIntInput("Введите возраст: "))
-                .filter(age -> validator.validateRange(age, 0, 150, "возраст") == null)
-                .findFirst()
-                .orElse(0);
-    }
-
-    private int getValidatedScore() {
-        return Stream.generate(() -> getIntInput("Введите оценку: "))
-                .filter(score -> validator.validateRange(score, 0, 100, "оценка") == null)
-                .findFirst()
-                .orElse(0);
     }
 
     public int size() {
@@ -156,14 +157,33 @@ public class InputUtils {
     }
 
     public Person get(int index) {
-        if (index >= 0 && index < persons.size()) {
-            return persons.get(index);
+        synchronized (persons) {
+            if (index >= 0 && index < persons.size()) {
+                return persons.get(index);
+            }
+            return null;
         }
-        return null;
     }
 
     public void clear() {
-        persons.clear();
-        System.out.println("Массив очищен.");
+        synchronized (persons) {
+            persons.clear();
+            System.out.println("Массив очищен.");
+        }
+    }
+
+    public List<Person> getAllPersons() {
+        synchronized (persons) {
+            return new ArrayList<>(persons);
+        }
+    }
+
+    private Person createPersonFromLine(String line) {
+        String[] parts = line.split(",");
+        return Person.builder()
+                .name(parts[0].trim())
+                .age(Integer.parseInt(parts[1].trim()))
+                .score(Integer.parseInt(parts[2].trim()))
+                .build();
     }
 }

@@ -1,4 +1,4 @@
-package src.main.java.org.example.utils;
+package org.example.utils;
 
 public interface Validator<T> {
     String validate(T value);
