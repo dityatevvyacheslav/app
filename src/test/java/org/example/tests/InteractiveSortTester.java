@@ -22,6 +22,7 @@ public class InteractiveSortTester {
             return;
         }
 
+
         List<Integer> testData = generateRandomArray(arraySize);
         System.out.println("\nСгенерирован массив из " + arraySize + " элементов");
 
