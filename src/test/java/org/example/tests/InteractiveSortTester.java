@@ -2,13 +2,9 @@ package org.example.tests;
 
 import org.example.sorting.BubbleSort;
 import org.example.sorting.InsertionSort;
-import org.example.sorting.MergeSort;
-import org.example.sorting.RadixSort;
+import org.example.sorting.async.MergeSort;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +18,7 @@ public class InteractiveSortTester {
         scanner.close();
 
         if (arraySize <= 0) {
-            System.out.println("Размер массива должен быть положительным числом!");
+            System.out.println("Размер массива должна быть положительным числом!");
             return;
         }
 
@@ -32,7 +28,6 @@ public class InteractiveSortTester {
         testBubbleSort(new ArrayList<>(testData));
         testInsertionSort(new ArrayList<>(testData));
         testMergeSort(new ArrayList<>(testData));
-        testRadixSort(new ArrayList<>(testData));
     }
 
     private static List<Integer> generateRandomArray(int size) {
@@ -86,24 +81,34 @@ public class InteractiveSortTester {
 
         try (MergeSort<Integer> sorter = new MergeSort<>(4)) {
             long startTime = System.currentTimeMillis();
+
             CompletableFuture<List<Integer>> future = sorter.sort(data);
             List<Integer> result = future.get(1, TimeUnit.MINUTES);
+
             long endTime = System.currentTimeMillis();
 
             System.out.println("Время выполнения: " + (endTime - startTime) + " мс");
             System.out.println("Проверка сортировки: " + (isSorted(result) ? "УСПЕХ" : "ОШИБКА"));
         } catch (Exception e) {
             System.out.println("Ошибка при сортировке: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    private static void testRadixSort(List<Integer> data) {
-        System.out.println("\n    Radix Sort ");
+    private static void testSyncVersions(List<Integer> data) {
+        System.out.println("\n=== Тестирование синхронных версий ===");
 
-        try (RadixSort sorter = new RadixSort(4)) {
+        testMergeSortSync(new ArrayList<>(data));
+    }
+
+    private static void testMergeSortSync(List<Integer> data) {
+        System.out.println("\n    Merge Sort (синхронный)");
+
+        try (MergeSort<Integer> sorter = new MergeSort<>(4)) {
             long startTime = System.currentTimeMillis();
-            CompletableFuture<List<Integer>> future = sorter.sort(data);
-            List<Integer> result = future.get(1, TimeUnit.MINUTES);
+
+            List<Integer> result = sorter.sortAsync(data, Comparator.naturalOrder());
+
             long endTime = System.currentTimeMillis();
 
             System.out.println("Время выполнения: " + (endTime - startTime) + " мс");
