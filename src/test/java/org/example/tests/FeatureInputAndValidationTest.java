@@ -1,10 +1,12 @@
-package org.example.utils;
+package org.example.tests;
 
-
+import org.example.utils.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
 import java.nio.file.Path;
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureInputAndValidationTest {
