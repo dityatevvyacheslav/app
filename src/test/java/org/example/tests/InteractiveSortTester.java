@@ -48,11 +48,11 @@ public class InteractiveSortTester {
             return;
         }
 
-        BubbleSort sorter = new BubbleSort();
-        int[] array = data.stream().mapToInt(i -> i).toArray();
+        BubbleSort<Integer> sorter = new BubbleSort<>();
+        List<Integer> array = data;
 
         long startTime = System.currentTimeMillis();
-        sorter.sort(array);
+        sorter.sort(array, Comparator.naturalOrder());
         long endTime = System.currentTimeMillis();
 
         System.out.println("Время выполнения: " + (endTime - startTime) + " мс");
@@ -66,11 +66,11 @@ public class InteractiveSortTester {
             return;
         }
 
-        InsertionSort sorter = new InsertionSort();
-        int[] array = data.stream().mapToInt(i -> i).toArray();
+        InsertionSort<Integer> sorter = new InsertionSort<>();
+        List<Integer> array = data;
 
         long startTime = System.currentTimeMillis();
-        sorter.sort(array);
+        sorter.sort(array, Comparator.naturalOrder());
         long endTime = System.currentTimeMillis();
 
         System.out.println("Время выполнения: " + (endTime - startTime) + " мс");

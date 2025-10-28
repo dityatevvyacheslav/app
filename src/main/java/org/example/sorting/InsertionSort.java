@@ -1,41 +1,26 @@
 package org.example.sorting;
 
-public class InsertionSort<T extends Comparable<? super T>> {
-    public void sort(T[] array) {
-        if (array == null || array.length <= 1) {
+import java.util.Comparator;
+import java.util.List;
+
+public class InsertionSort<T> implements SortStrategy<T> {
+
+    @Override
+    public void sort(List<T> list, Comparator<T> comparator) {
+        if (list == null || list.size() <= 1) {
             return;
         }
-        int n = array.length;
+        int n = list.size();
 
         for (int i = 1; i < n; i++) {
-            T key = array[i];
+            T key = list.get(i);
             int j = i - 1;
 
-            while (j >= 0 && array[j].compareTo(key) > 0) {
-                array[j + 1] = array[j];
+            while (j >= 0 && comparator.compare(list.get(j), key) > 0) {
+                list.set(j + 1, list.get(j));
                 j = j - 1;
             }
-            array[j + 1] = key;
-
-        }
-    }
-
-    public void sort(int[] array) {
-        if (array == null || array.length <= 1) {
-            return;
-        }
-        int n = array.length;
-
-        for (int i = 1; i < n; i++) {
-            int key = array[i];
-            int j = i - 1;
-
-            while (j >= 0 && array[j] > key) {
-                array[j + 1] = array[j];
-                j = j - 1;
-            }
-            array[j + 1] = key;
-
+            list.set(j + 1, key);
         }
     }
 }

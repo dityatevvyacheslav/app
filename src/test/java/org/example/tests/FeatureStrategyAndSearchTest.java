@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureStrategyAndSearchTest {
 
-    // --- Тесты для SortContext и SortStrategy ---
 
     private static class SimpleSort implements SortStrategy<Integer> {
         @Override
@@ -46,7 +45,6 @@ class FeatureStrategyAndSearchTest {
         assertEquals("Сортировочная стратегия не выбрана!", exception.getMessage());
     }
 
-    // --- Тесты для BinarySearch ---
 
     @Test
     @DisplayName("Бинарный поиск — элемент найден")

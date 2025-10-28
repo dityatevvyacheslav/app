@@ -1,6 +1,7 @@
 package org.example.tests;
 
 import org.example.utils.*;
+import org.example.model.Person;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

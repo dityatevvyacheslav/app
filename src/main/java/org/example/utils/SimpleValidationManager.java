@@ -3,6 +3,7 @@ package org.example.utils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
+import org.example.model.Person;
 
 public class SimpleValidationManager {
 
